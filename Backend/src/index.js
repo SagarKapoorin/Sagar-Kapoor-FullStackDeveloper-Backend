@@ -1,12 +1,14 @@
+import dotenv from "dotenv";
+dotenv.config({ path: "../../.env" });
+
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import dotenv from "dotenv";
 import helmet from "helmet";
 import morgan from "morgan";
 import './config/redis.js';
 import { redisRateLimiter } from "./config/redis.js";
-dotenv.config({ path: "../../.env" });
+import chatRouter from './routes/chat.js';
 
 const app = express();
 
@@ -22,6 +24,8 @@ app.use(
     credentials: true,
   })
 );
+// Chat endpoints: message, history retrieval, and clearing
+app.use('/api/chat', chatRouter);
 
 const PORT = process.env.PORT || "3000";
 // console.log(PORT);

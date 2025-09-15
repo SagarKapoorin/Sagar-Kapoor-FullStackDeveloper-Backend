@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { createClient } from "redis";
 const exec = mongoose.Query.prototype.exec;
 
-const redisUrl = process.env.redisUrl || "redis://127.0.0.1:6379";
+const redisUrl = process.env.REDIS_URL || process.env.redisUrl || "redis://127.0.0.1:6379";
 export const client = createClient({
   url: redisUrl,
 });
