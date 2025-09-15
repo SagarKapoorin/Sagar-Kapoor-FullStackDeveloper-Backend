@@ -8,9 +8,8 @@ const TOP_K = parseInt(process.env.TOP_K, 10) || 5;
 const CHAT_HISTORY_TTL = parseInt(process.env.CHAT_HISTORY_TTL, 10) || 86400;
 
 export const getChatResponse = async (sessionId, query) => {
-  // Embed query using hosted Jina API
   const [queryEmbedding] = await getJinaEmbeddings([query]);
-  // Perform vector similarity search against MongoDB's vector index
+  //performing vector similarity search against MongoDB vector index
   const rawResults = await Article.collection.find({
     $vectorSearch: { vector: queryEmbedding, path: 'embedding', k: TOP_K }
   }).toArray();
