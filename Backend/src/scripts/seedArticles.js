@@ -3,13 +3,10 @@ dotenv.config({ path: '../../.env' });
 
 import mongoose from 'mongoose';
 import Parser from 'rss-parser';
-import axios from 'axios';
 import Article from '../models/article.js';
+import { getJinaEmbeddings } from '../lib/jina.js';
 
 const MONGO_URL = process.env.MONGO_URL;
-const JINA_HOST = process.env.JINA_HOST || 'localhost';
-const JINA_PORT = process.env.JINA_PORT || '45678';
-const jinaUrl = `http://${JINA_HOST}:${JINA_PORT}`;
 const RSS_FEED_URL = process.env.RSS_FEED_URL;
 const MAX_ARTICLES = 50;
 
@@ -33,8 +30,8 @@ async function seed() {
   for (const item of items) {
     const text = item.contentSnippet || item.content || item.title || '';
     try {
-      const embedRes = await axios.post(`${jinaUrl}/encode`, { data: [text] });
-      const embedding = embedRes.data.documents?.[0]?.embedding;
+      const embeddings = await getJinaEmbeddings([text]);
+      const embedding = embeddings[0];
 
       await Article.findOneAndUpdate(
         { url: item.link },

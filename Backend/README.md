@@ -6,7 +6,7 @@ This repository implements a simple chatbot over a news corpus, combining retrie
 
 - **Ingestion & Embedding**
   - Fetch ~50 articles via RSS feed
-  - Embed documents using a self-hosted Jina Flow (free tier)
+  - Embed documents using Jina Cloud's hosted embeddings API
   - Store embeddings in MongoDB with a vector index
 - **Retrieval & Generation**
   - On user query: embed the query, retrieve top-K relevant passages via Jina
@@ -26,7 +26,7 @@ This repository implements a simple chatbot over a news corpus, combining retrie
 3. Start services:
    - MongoDB
    - Redis
-   - Jina Flow (see below)
+   
 4. Install dependencies and seed articles (run once to bootstrap your corpus):
    ```bash
    npm install
@@ -38,25 +38,9 @@ This repository implements a simple chatbot over a news corpus, combining retrie
    npm run dev
    ```
 
-## Jina Flow (Free & Self-Hosted)
+## Jina Cloud Embeddings API (Hosted)
 
-Create a minimal `flow.yml`:
-```yaml
-!Flow
-pods:
-  encoder:
-    uses: jinahub://SentenceTransformerEncoder
-  indexer:
-    uses: jinaai/hub/indexers/keyvalue/FAISSIndexer
-  rest:
-    uses: jinaai/jina:latest
-    uses: rest: {}
-    needs: [encoder, indexer]
-```
-Start it:
-```bash
-jina flow --uses flow.yml --port ${JINA_PORT}
-```
+No local Jina Flow is required for embeddings. Sign up at https://cloud.jina.ai/, obtain a free API key, and add `JINA_API_KEY` to your `.env`.
 
 ## Configuration
 
@@ -70,9 +54,8 @@ NODE_ENV=development
 MONGO_URL=mongodb://localhost:27017/mydatabase
 REDIS_URL=redis://127.0.0.1:6379
 
-# Jina Flow
-JINA_HOST=localhost
-JINA_PORT=45678
+# Jina Embeddings API
+JINA_API_KEY=your_jina_api_key
 
 # Google Gemini
 GEMINI_API_KEY=your_gemini_api_key

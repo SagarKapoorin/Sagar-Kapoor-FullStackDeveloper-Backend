@@ -1,23 +1,20 @@
 import axios from 'axios';
 import Article from '../models/article.js';
 import { client as redisClient } from '../config/redis.js';
+import { getJinaEmbeddings } from '../lib/jina.js';
 
-const JINA_HOST = process.env.JINA_HOST || 'localhost';
-const JINA_PORT = process.env.JINA_PORT || '45678';
-const jinaUrl = `http://${JINA_HOST}:${JINA_PORT}`;
 
 const TOP_K = parseInt(process.env.TOP_K, 10) || 5;
 const CHAT_HISTORY_TTL = parseInt(process.env.CHAT_HISTORY_TTL, 10) || 86400;
 
 export const getChatResponse = async (sessionId, query) => {
-  const embedRes = await axios.post(`${jinaUrl}/encode`, { data: [query] });
-  const queryEmbedding = embedRes.data.documents?.[0]?.embedding;
-  const searchRes = await axios.post(`${jinaUrl}/search`, {
-    data: [query],
-    parameters: { top_k: TOP_K }
-  });
-  const docs = searchRes.data.search?.[0]?.data?.[0]?.docs || [];
-  const passages = docs.map((d) => d.content || d.tags?.content || '');
+  // Embed query using hosted Jina API
+  const [queryEmbedding] = await getJinaEmbeddings([query]);
+  // Perform vector similarity search against MongoDB's vector index
+  const rawResults = await Article.collection.find({
+    $vectorSearch: { vector: queryEmbedding, path: 'embedding', k: TOP_K }
+  }).toArray();
+  const passages = rawResults.map((d) => d.content || '');
   const context = passages.join('\n\n');
   const geminiRes = await axios.post(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
