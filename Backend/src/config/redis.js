@@ -1,11 +1,9 @@
 import mongoose from "mongoose";
 import { createClient } from "redis";
-import { RateLimiterRedis } from "rate-limiter-flexible";
-
 const exec = mongoose.Query.prototype.exec;
 
 const redisUrl = process.env.redisUrl || "redis://127.0.0.1:6379";
-const client = createClient({
+export const client = createClient({
   url: redisUrl,
 });
 
@@ -63,22 +61,4 @@ export const clearHash = async (hashKey) => {
   } catch (error) {
     console.error(`Error clearing hash for key ${hashKey}:`, error);
   }
-};
-
-// 100 requests per 60 seconds
-const rateLimiter = new RateLimiterRedis({
-  storeClient: client,
-  keyPrefix: "rl",
-  points: 100,     
-  duration: 60,    
-});
-
-export const redisRateLimiter = (req, res, next) => {
-  const key = req.ip; 
-
-  rateLimiter.consume(key)
-    .then(() => next())
-    .catch(() => {
-      res.status(429).json({ error: "Too many requests, please slow down 🚦" });
-    });
 };
