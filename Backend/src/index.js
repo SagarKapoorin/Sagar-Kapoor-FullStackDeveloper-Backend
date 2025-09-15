@@ -39,3 +39,15 @@ mongoose
     connect`)
   );
 
+app.use((err, req, res, next) => {
+  console.error(err);
+  if (res.headersSent) {
+    return next(err);
+  }
+  const status = err.statusCode || 500;
+  const message =
+    process.env.NODE_ENV === "production"
+      ? "Internal Server Error"
+      : err.message;
+  res.status(status).json({ status: "error", message });
+});
