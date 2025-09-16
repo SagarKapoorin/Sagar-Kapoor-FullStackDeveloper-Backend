@@ -8,7 +8,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import './config/redis.js';
-import { redisRateLimiter } from "./config/redis.js";
+import {redisRateLimiter} from './middlewares/redisRateLimiter.js';
 import chatRouter from './routes/chat.js';
 
 const app = express();

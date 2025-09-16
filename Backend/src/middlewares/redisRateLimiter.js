@@ -1,5 +1,5 @@
 import { RateLimiterRedis } from "rate-limiter-flexible";
-import { client } from "../config/redis";
+import { client } from "../config/redis.js";
 
 // 100 requests per 60 seconds
 const rateLimiter = new RateLimiterRedis({
