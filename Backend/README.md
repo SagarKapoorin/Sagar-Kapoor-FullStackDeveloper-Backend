@@ -78,15 +78,20 @@ CHAT_HISTORY_TTL=86400
 After seeding your articles, you must create the MongoDB vector index by hand. In your mongo shell execute:
 ```js
 use <yourDatabaseName>;                     // e.g. mydatabase
-db.articles.createIndex(
-  { embedding: "vector" },                // field and type
-  {
-    name:           "embedding_vector_idx", // index name
-    dimensions:     384,                     // match EMBEDDING_DIM
-    distanceMetric: "cosine",               // similarity metric
-    algorithm:      "hnsw"                  // ANN algorithm
+db.articles.createSearchIndex({
+  name: "embedding_vector_idx",
+  type: "vectorSearch",
+  definition: {
+    fields: [
+      {
+        type: "vector",
+        path: "embedding",
+        numDimensions: 384,
+        similarity: "cosine"
+      }
+    ]
   }
-);
+});
 // Verify:
 db.articles.getIndexes();
 ```
