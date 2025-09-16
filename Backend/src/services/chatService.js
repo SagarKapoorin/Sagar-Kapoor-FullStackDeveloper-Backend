@@ -3,13 +3,18 @@ import Article from '../models/article.js';
 import { client as redisClient } from '../config/redis.js';
 import ChatSession from '../models/chatSession.js';
 import { getJinaEmbeddings } from '../lib/jina.js';
+import createError from 'http-errors';
 
 
 const TOP_K = parseInt(process.env.TOP_K, 10) || 5;
 const CHAT_HISTORY_TTL = parseInt(process.env.CHAT_HISTORY_TTL, 10) || 86400;
 
 export const getChatResponse = async (sessionId, query) => {
-  const [queryEmbedding] = await getJinaEmbeddings([query]);
+  if (typeof query !== 'string' || !query.trim()) {
+    throw new createError.BadRequest('Query must be a non-empty string');
+  }
+  try {
+    const [queryEmbedding] = await getJinaEmbeddings([query]);
   //performing vector similarity search against MongoDB vector index
 const rawResults = await Article.collection.aggregate([
   {
@@ -65,29 +70,60 @@ const rawResults = await Article.collection.aggregate([
   )
     .exec()
     .catch((err) => console.error('Mongo persistence error', err));
-  return answer;
+    return answer;
+  } catch (err) {
+    console.error('getChatResponse error', err);
+    if (err.isAxiosError || err.response) {
+      throw new createError.BadGateway('Upstream service error');
+    }
+    throw new createError.InternalServerError('Failed to generate chat response');
+  }
 };
 
 export const getHistory = async (sessionId) => {
-  const historyKey = `chat:${sessionId}`;
-  const entries = await redisClient.lRange(historyKey, 0, -1);
-  if (entries.length > 0) {
-    return entries.map((e) => JSON.parse(e));
+  if (typeof sessionId !== 'string' || !sessionId) {
+    throw new createError.BadRequest('Invalid sessionId');
   }
-  const doc = await ChatSession.findOne({ sessionId });
-  return doc?.messages || [];
+  try {
+    const historyKey = `chat:${sessionId}`;
+    const entries = await redisClient.lRange(historyKey, 0, -1);
+    if (entries.length > 0) {
+      return entries.map((e) => JSON.parse(e));
+    }
+    const doc = await ChatSession.findOne({ sessionId });
+    return doc?.messages || [];
+  } catch (err) {
+    console.error('getHistory error', err);
+    throw new createError.InternalServerError('Could not retrieve chat history');
+  }
 };
 
 export const clearHistory = async (sessionId) => {
-  const historyKey = `chat:${sessionId}`;
-  await redisClient.del(historyKey);
-  await ChatSession.findOneAndUpdate(
-    { sessionId },
-    { messages: [] },
-    { upsert: true }
-  );
+  if (typeof sessionId !== 'string' || !sessionId) {
+    throw new createError.BadRequest('Invalid sessionId');
+  }
+  try {
+    const historyKey = `chat:${sessionId}`;
+    await redisClient.del(historyKey);
+    await ChatSession.findOneAndUpdate(
+      { sessionId },
+      { messages: [] },
+      { upsert: true }
+    );
+  } catch (err) {
+    console.error('clearHistory error', err);
+    throw new createError.InternalServerError('Could not clear chat history');
+  }
 };
 export const getTranscript = async (sessionId) => {
-  const doc = await ChatSession.findOne({ sessionId });
-  return doc?.messages || [];
+  if (typeof sessionId !== 'string' || !sessionId) {
+    throw new createError.BadRequest('Invalid sessionId');
+  }
+  try {
+    const doc = await ChatSession.findOne({ sessionId });
+    return doc?.messages || [];
+  } catch (err) {
+    console.error('getTranscript error', err);
+    throw new createError.InternalServerError('Could not retrieve transcript');
+  }
 };
