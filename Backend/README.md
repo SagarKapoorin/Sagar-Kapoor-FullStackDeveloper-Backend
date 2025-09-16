@@ -15,9 +15,9 @@ This repository implements a simple chatbot over a news corpus, combining retrie
 - **Backend**
   - Node.js (Express) REST API
   - Endpoints:
-    - POST   `/api/chat` → `{ sessionId, query }` → `{ answer }`
-    - GET    `/api/chat/:sessionId/history` → chat history array
-    - DELETE `/api/chat/:sessionId/history` → clear session history
+    - POST   `/api/chat` → `{ sessionId, query }` → `{ success: true, answer }`
+    - GET    `/api/chat/:sessionId/history` → `{ success: true, history }`
+    - DELETE `/api/chat/:sessionId/history` → `{ success: true }` (clears session history)
 
 ## Quickstart
 

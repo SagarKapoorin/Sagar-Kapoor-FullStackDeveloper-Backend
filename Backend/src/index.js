@@ -44,6 +44,7 @@ mongoose
     connect`)
   );
 
+// Global error handler: return JSON with success:false and error message
 app.use((err, req, res, next) => {
   console.error(err);
   if (res.headersSent) {
@@ -54,5 +55,5 @@ app.use((err, req, res, next) => {
     process.env.NODE_ENV === "production"
       ? "Internal Server Error"
       : err.message;
-  res.status(status).json({ status: "error", message });
+  res.status(status).json({ success: false, error: message });
 });

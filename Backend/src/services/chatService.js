@@ -31,10 +31,16 @@ const rawResults = await Article.collection.aggregate([
   const passages = rawResults.map((d) => d.content || '');
   const context = passages.join('\n\n');
   const geminiRes = await axios.post(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,
     {
       contents: [{ parts: [{ text: `Context: ${context}\n\nUser: ${query}\n\nAnswer:` }] }]
+    },
+        {
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': process.env.GEMINI_API_KEY
     }
+  }
   );
   const answer = geminiRes.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
@@ -53,5 +59,6 @@ export const getHistory = async (sessionId) => {
 };
 
 export const clearHistory = async (sessionId) => {
-  await redisClient.del(`chat:${sessionId}`);
+  // Delete the chat history key and return the number of keys removed
+  return await redisClient.del(`chat:${sessionId}`);
 };
