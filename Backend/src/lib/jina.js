@@ -23,14 +23,17 @@ export async function getJinaEmbeddings(
   try {
     const response = await axios.post(
       JINA_EMBED_URL,
-      { model, data: texts, parameters: { normalize_embeddings: normalize } },
+       {
+        model,
+        input: texts,  
+      },
       { headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${apiKey}`
         }
       }
     );
-    return response.data.embeddings;
+    return response.data.data.map(d => d.embedding);
   } catch (err) {
     if (err.response && err.response.data) {
       console.error('Jina API error:', err.response.status, err.response.data);
