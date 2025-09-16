@@ -1,6 +1,7 @@
 import axios from 'axios';
 import Article from '../models/article.js';
 import { client as redisClient } from '../config/redis.js';
+import ChatSession from '../models/chatSession.js';
 import { getJinaEmbeddings } from '../lib/jina.js';
 
 
@@ -46,7 +47,18 @@ const rawResults = await Article.collection.aggregate([
 
   const historyKey = `chat:${sessionId}`;
   await redisClient.rPush(historyKey, JSON.stringify({ role: 'user', text: query }));
+  // Persist user message in MongoDB
+  await ChatSession.findOneAndUpdate(
+    { sessionId },
+    { $push: { messages: { role: 'user', text: query, timestamp: new Date() } } },
+    { upsert: true }
+  );
   await redisClient.rPush(historyKey, JSON.stringify({ role: 'bot', text: answer }));
+  // Persist bot message in MongoDB
+  await ChatSession.findOneAndUpdate(
+    { sessionId },
+    { $push: { messages: { role: 'bot', text: answer, timestamp: new Date() } } }
+  );
   await redisClient.expire(historyKey, CHAT_HISTORY_TTL);
 
   return answer;
@@ -54,11 +66,29 @@ const rawResults = await Article.collection.aggregate([
 
 export const getHistory = async (sessionId) => {
   const historyKey = `chat:${sessionId}`;
+  // Try reading transient history from Redis first
   const entries = await redisClient.lRange(historyKey, 0, -1);
-  return entries.map((e) => JSON.parse(e));
+  if (entries.length > 0) {
+    return entries.map((e) => JSON.parse(e));
+  }
+  // Fallback to permanent transcript in MongoDB
+  const doc = await ChatSession.findOne({ sessionId });
+  return doc?.messages || [];
 };
 
 export const clearHistory = async (sessionId) => {
-  // Delete the chat history key and return the number of keys removed
-  return await redisClient.del(`chat:${sessionId}`);
+  const historyKey = `chat:${sessionId}`;
+  // Clear Redis transient history
+  await redisClient.del(historyKey);
+  // Clear MongoDB transcript messages for this session
+  await ChatSession.findOneAndUpdate(
+    { sessionId },
+    { messages: [] },
+    { upsert: true }
+  );
+};
+// Retrieve the full permanent transcript from MongoDB
+export const getTranscript = async (sessionId) => {
+  const doc = await ChatSession.findOne({ sessionId });
+  return doc?.messages || [];
 };

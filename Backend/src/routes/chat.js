@@ -1,5 +1,5 @@
 import express from 'express';
-import { getChatResponse, getHistory, clearHistory } from '../services/chatService.js';
+import { getChatResponse, getHistory, clearHistory, getTranscript } from '../services/chatService.js';
 
 const router = express.Router();
 
@@ -32,6 +32,16 @@ router.delete('/history', async (req, res, next) => {
     const sessionId = req.sessionId;
     await clearHistory(sessionId);
     return res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+});
+// Permanent transcript endpoint (reads from MongoDB)
+router.get('/transcript', async (req, res, next) => {
+  try {
+    const sessionId = req.sessionId;
+    const transcript = await getTranscript(sessionId);
+    return res.json({ success: true, transcript });
   } catch (err) {
     next(err);
   }
