@@ -4,10 +4,41 @@ import { client as redisClient } from '../config/redis.js';
 import ChatSession from '../models/chatSession.js';
 import { getJinaEmbeddings } from '../lib/jina.js';
 import createError from 'http-errors';
+import CircuitBreaker from 'opossum';
 
 
 const TOP_K = parseInt(process.env.TOP_K, 10) || 5;
 const CHAT_HISTORY_TTL = parseInt(process.env.CHAT_HISTORY_TTL, 10) || 86400;
+
+// Set up circuit-breaker for Gemini API calls
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+const geminiOptions = {
+  timeout: 10000,                 //10s timeout
+  errorThresholdPercentage: 50,   //50% fail rate
+  resetTimeout: 30000,            // 30s
+};
+const geminiBreaker = new CircuitBreaker(
+  async (context, queryText) => {
+    const payload = {
+      contents: [{ parts: [{ text: `Context: ${context}\n\nUser: ${queryText}\n\nAnswer:` }] }]
+    };
+    const res = await axios.post(
+      GEMINI_URL,
+      payload,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': process.env.GEMINI_API_KEY
+        }
+      }
+    );
+    return res.data;
+  },
+  geminiOptions
+);
+geminiBreaker.fallback(() => {
+  throw new createError.BadGateway('Gemini API unavailable');
+});
 
 export const getChatResponse = async (sessionId, query) => {
   if (typeof query !== 'string' || !query.trim()) {
@@ -36,19 +67,9 @@ const rawResults = await Article.collection.aggregate([
 
   const passages = rawResults.map((d) => d.content || '');
   const context = passages.join('\n\n');
-  const geminiRes = await axios.post(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,
-    {
-      contents: [{ parts: [{ text: `Context: ${context}\n\nUser: ${query}\n\nAnswer:` }] }]
-    },
-        {
-    headers: {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': process.env.GEMINI_API_KEY
-    }
-  }
-  );
-  const answer = geminiRes.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  // Generate answer via Gemini API (with circuit-breaker)
+  const geminiData = await geminiBreaker.fire(context, query);
+  const answer = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
   const now = new Date();
   const userMsg = { role: 'user', text: query, timestamp: now };
