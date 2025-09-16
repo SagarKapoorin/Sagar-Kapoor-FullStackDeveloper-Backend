@@ -5,34 +5,31 @@ const router = express.Router();
 
 router.post('/', async (req, res, next) => {
   try {
-    const { sessionId, query } = req.body;
-    if (!sessionId || !query) {
-      // Missing required parameters
-      return res.status(400).json({ success: false, error: 'sessionId and query are required' });
+    const query = req.body.query;
+    const sessionId = req.sessionId;
+    if (!query) {
+      return res.status(400).json({ success: false, error: 'query is required' });
     }
     const answer = await getChatResponse(sessionId, query);
-    // Return success flag along with answer
     return res.json({ success: true, answer });
   } catch (err) {
     next(err);
   }
 });
 
-router.get('/:sessionId/history', async (req, res, next) => {
+router.get('/history', async (req, res, next) => {
   try {
-    const { sessionId } = req.params;
+    const sessionId = req.sessionId;
     const history = await getHistory(sessionId);
-    // Return success flag along with history
     return res.json({ success: true, history });
   } catch (err) {
     next(err);
   }
 });
 
-router.delete('/:sessionId/history', async (req, res, next) => {
+router.delete('/history', async (req, res, next) => {
   try {
-    const { sessionId } = req.params;
-    // Clear stored chat history and respond with success
+    const sessionId = req.sessionId;
     await clearHistory(sessionId);
     return res.json({ success: true });
   } catch (err) {

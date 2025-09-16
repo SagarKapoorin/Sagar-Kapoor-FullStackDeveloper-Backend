@@ -14,10 +14,10 @@ This repository implements a simple chatbot over a news corpus, combining retrie
   - Persist chat history per session in Redis
 - **Backend**
   - Node.js (Express) REST API
-  - Endpoints:
-    - POST   `/api/chat` → `{ sessionId, query }` → `{ success: true, answer }`
-    - GET    `/api/chat/:sessionId/history` → `{ success: true, history }`
-    - DELETE `/api/chat/:sessionId/history` → `{ success: true }` (clears session history)
+  - Endpoints (server manages `sessionId` via HTTP-only cookie):
+    - POST   `/api/chat` → `{ query }` → `{ success: true, answer }`
+    - GET    `/api/chat/history` → `{ success: true, history }`
+    - DELETE `/api/chat/history` → `{ success: true }` (clears session history)
 
 ## Quickstart
 
