@@ -45,49 +45,48 @@ const rawResults = await Article.collection.aggregate([
   );
   const answer = geminiRes.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
+  const now = new Date();
+  const userMsg = { role: 'user', text: query, timestamp: now };
+  const botMsg = { role: 'bot', text: answer, timestamp: now };
   const historyKey = `chat:${sessionId}`;
-  await redisClient.rPush(historyKey, JSON.stringify({ role: 'user', text: query }));
-  // Persist user message in MongoDB
-  await ChatSession.findOneAndUpdate(
-    { sessionId },
-    { $push: { messages: { role: 'user', text: query, timestamp: new Date() } } },
-    { upsert: true }
-  );
-  await redisClient.rPush(historyKey, JSON.stringify({ role: 'bot', text: answer }));
-  // Persist bot message in MongoDB
-  await ChatSession.findOneAndUpdate(
-    { sessionId },
-    { $push: { messages: { role: 'bot', text: answer, timestamp: new Date() } } }
-  );
-  await redisClient.expire(historyKey, CHAT_HISTORY_TTL);
+//multi to execute multiple statement together for bot and user message
+  redisClient
+    .multi()
+    .rPush(historyKey, JSON.stringify(userMsg), JSON.stringify(botMsg))
+    .expire(historyKey, CHAT_HISTORY_TTL)
+    .exec()
+    .catch((err) => console.error('Redis persistence error', err));
 
+  
+  ChatSession.findOneAndUpdate(
+    { sessionId },
+    { $push: { messages: { $each: [userMsg, botMsg] } } },
+    { upsert: true }
+  )
+    .exec()
+    .catch((err) => console.error('Mongo persistence error', err));
   return answer;
 };
 
 export const getHistory = async (sessionId) => {
   const historyKey = `chat:${sessionId}`;
-  // Try reading transient history from Redis first
   const entries = await redisClient.lRange(historyKey, 0, -1);
   if (entries.length > 0) {
     return entries.map((e) => JSON.parse(e));
   }
-  // Fallback to permanent transcript in MongoDB
   const doc = await ChatSession.findOne({ sessionId });
   return doc?.messages || [];
 };
 
 export const clearHistory = async (sessionId) => {
   const historyKey = `chat:${sessionId}`;
-  // Clear Redis transient history
   await redisClient.del(historyKey);
-  // Clear MongoDB transcript messages for this session
   await ChatSession.findOneAndUpdate(
     { sessionId },
     { messages: [] },
     { upsert: true }
   );
 };
-// Retrieve the full permanent transcript from MongoDB
 export const getTranscript = async (sessionId) => {
   const doc = await ChatSession.findOne({ sessionId });
   return doc?.messages || [];

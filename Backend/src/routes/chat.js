@@ -36,7 +36,6 @@ router.delete('/history', async (req, res, next) => {
     next(err);
   }
 });
-// Permanent transcript endpoint (reads from MongoDB)
 router.get('/transcript', async (req, res, next) => {
   try {
     const sessionId = req.sessionId;

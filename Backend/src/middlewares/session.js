@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
 export function sessionMiddleware(req, res, next) {
-  // Read sessionId from cookie; generate if missing
   let sid = req.cookies && req.cookies.sessionId;
   if (!sid) {
     sid = uuidv4();
@@ -13,7 +12,6 @@ export function sessionMiddleware(req, res, next) {
       maxAge: ttlMs,
     });
   }
-  // Attach to request for downstream handlers
   req.sessionId = sid;
   next();
 }

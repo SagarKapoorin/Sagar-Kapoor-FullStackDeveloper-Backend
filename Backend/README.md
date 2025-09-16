@@ -69,7 +69,7 @@ RSS_FEED_URL=https://rss.cnn.com/rss/cnn_topstories.rss
 TOP_K=5
 
 # Cache
-CHAT_HISTORY_TTL=86400
+CHAT_HISTORY_TTL=86400s
 ```
 
 ## Manual Vector Index Creation
@@ -101,9 +101,3 @@ This ensures that the `$vectorSearch` queries in `chatService.js` can run correc
 - Chat history TTL is controlled by `CHAT_HISTORY_TTL` (secs).
 - To warm caches, re-run `npm run seed` and invoke `/api/chat` with sample queries to populate Redis and Jina indices.
 
-## Next Steps
-
-- Add WebSocket support for live chat
-- Scale Jina Flow (sharding & replication)
-- Secure API keys via secret management
-- Add retry/circuit-breakers around external calls

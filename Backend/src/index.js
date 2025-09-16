@@ -16,10 +16,8 @@ import chatRouter from './routes/chat.js';
 const app = express();
 
 app.use(helmet());
-// Parse cookies and manage server-side session ID in a cookie
 app.use(cookieParser());
 app.use(sessionMiddleware);
-// Rate limiter per IP
 app.use(redisRateLimiter);
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));

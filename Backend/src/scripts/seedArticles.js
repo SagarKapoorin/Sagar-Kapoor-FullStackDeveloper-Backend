@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-// Load environment variables from .env in project root
 dotenv.config();
 
 import mongoose from 'mongoose';
