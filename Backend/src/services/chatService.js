@@ -10,9 +10,24 @@ const CHAT_HISTORY_TTL = parseInt(process.env.CHAT_HISTORY_TTL, 10) || 86400;
 export const getChatResponse = async (sessionId, query) => {
   const [queryEmbedding] = await getJinaEmbeddings([query]);
   //performing vector similarity search against MongoDB vector index
-  const rawResults = await Article.collection.find({
-    $vectorSearch: { vector: queryEmbedding, path: 'embedding', k: TOP_K }
-  }).toArray();
+const rawResults = await Article.collection.aggregate([
+  {
+    $vectorSearch: {
+      index: 'embedding_vector_idx', 
+      path: 'embedding',
+      queryVector: queryEmbedding,
+      numCandidates: 100,     
+      limit: TOP_K             
+    }
+  },
+  {
+    $project: {
+      content: 1,
+      score: { $meta: 'vectorSearchScore' }
+    }
+  }
+]).toArray();
+
   const passages = rawResults.map((d) => d.content || '');
   const context = passages.join('\n\n');
   const geminiRes = await axios.post(

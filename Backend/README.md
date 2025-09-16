@@ -66,7 +66,6 @@ GEMINI_API_KEY=your_gemini_api_key
 RSS_FEED_URL=https://rss.cnn.com/rss/cnn_topstories.rss
 
 # RAG parameters
-EMBEDDING_DIM=384
 TOP_K=5
 
 # Cache
@@ -86,14 +85,14 @@ db.articles.createSearchIndex({
       {
         type: "vector",
         path: "embedding",
-        numDimensions: 384,
+        numDimensions: 1024,
         similarity: "cosine"
       }
     ]
   }
 });
 // Verify:
-db.articles.getIndexes();
+verfiy on mongodb Atlas search section once
 ```
 This ensures that the `$vectorSearch` queries in `chatService.js` can run correctly.
 
