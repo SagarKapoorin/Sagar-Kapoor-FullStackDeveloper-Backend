@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
-dotenv.config({ path: "../../.env" });
+// Load environment variables from .env in project root
+dotenv.config();
 
 import express from "express";
 import mongoose from "mongoose";

@@ -7,7 +7,7 @@ This repository implements a simple chatbot over a news corpus, combining retrie
 - **Ingestion & Embedding**
   - Fetch ~50 articles via RSS feed
   - Embed documents using Jina Cloud's hosted embeddings API
-  - Store embeddings in MongoDB with a vector index
+  - Store embeddings in MongoDB (requires manual vector index creation)
 - **Retrieval & Generation**
   - On user query: embed the query, retrieve top-K relevant passages via Jina
   - Assemble context, call Google Gemini API for final answer
@@ -56,6 +56,8 @@ REDIS_URL=redis://127.0.0.1:6379
 
 # Jina Embeddings API
 JINA_API_KEY=your_jina_api_key
+# (Optional) override default embedding model on Jina Cloud
+JINA_MODEL=jina/all-MiniLM-L6-v2
 
 # Google Gemini
 GEMINI_API_KEY=your_gemini_api_key
@@ -70,6 +72,25 @@ TOP_K=5
 # Cache
 CHAT_HISTORY_TTL=86400
 ```
+
+## Manual Vector Index Creation
+
+After seeding your articles, you must create the MongoDB vector index by hand. In your mongo shell execute:
+```js
+use <yourDatabaseName>;                     // e.g. mydatabase
+db.articles.createIndex(
+  { embedding: "vector" },                // field and type
+  {
+    name:           "embedding_vector_idx", // index name
+    dimensions:     384,                     // match EMBEDDING_DIM
+    distanceMetric: "cosine",               // similarity metric
+    algorithm:      "hnsw"                  // ANN algorithm
+  }
+);
+// Verify:
+db.articles.getIndexes();
+```
+This ensures that the `$vectorSearch` queries in `chatService.js` can run correctly.
 
 ## TTL & Cache Warming
 

@@ -8,11 +8,9 @@ const articleSchema = new mongoose.Schema({
   publishedAt: { type: Date }
 });
 
-const embeddingDim = parseInt(process.env.EMBEDDING_DIM, 10) || 384;
-articleSchema.index(
-  { embedding: 'vector' },
-  { name: 'embedding_vector_idx', dimensions: embeddingDim }
-);
+// NOTE: Vector index on 'embedding' must be created manually via MongoDB shell.
+// See README for 'Manual Vector Index Creation' instructions.
+
 
 const Article = mongoose.model('Article', articleSchema);
 export default Article;
