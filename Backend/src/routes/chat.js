@@ -47,17 +47,6 @@ router.delete('/history', async (req, res, next) => {
     next(err);
   }
 });
-router.get('/transcript', async (req, res, next) => {
-  try {
-    const sessionId = req.sessionId;
-    if (typeof sessionId !== 'string' || !sessionId) {
-      throw new createError.BadRequest('Missing sessionId');
-    }
-    const transcript = await getTranscript(sessionId);
-    return res.json({ success: true, transcript });
-  } catch (err) {
-    next(err);
-  }
-});
+
 
 export default router;

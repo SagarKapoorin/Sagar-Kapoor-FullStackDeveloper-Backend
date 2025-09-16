@@ -15,9 +15,9 @@ This repository implements a simple chatbot over a news corpus, combining retrie
 - **Backend**
   - Node.js (Express) REST API
   - Endpoints (server manages `sessionId` via HTTP-only cookie):
-    - POST   `/api/chat` → `{ query }` → `{ success: true, answer }`
-    - GET    `/api/chat/history` → `{ success: true, history }`
-    - DELETE `/api/chat/history` → `{ success: true }` (clears session history)
+    - POST    `/api/chat`         → `{ query }` → `{ success: true, answer }`
+    - GET     `/api/chat/history` → `{ success: true, history }`           (fast Redis cache, falls back to Mongo)
+    - DELETE  `/api/chat/history` → `{ success: true }`                   (clears both Redis & Mongo history)
 
 ## Quickstart
 
@@ -69,14 +69,14 @@ RSS_FEED_URL=https://rss.cnn.com/rss/cnn_topstories.rss
 TOP_K=5
 
 # Cache
-CHAT_HISTORY_TTL=86400s
+CHAT_HISTORY_TTL=86400  
 ```
 
 ## Manual Vector Index Creation
 
 After seeding your articles, you must create the MongoDB vector index by hand. In your mongo shell execute:
 ```js
-use <yourDatabaseName>;                     // e.g. mydatabase
+use <yourDatabaseName>;                     
 db.articles.createSearchIndex({
   name: "embedding_vector_idx",
   type: "vectorSearch",
@@ -100,4 +100,16 @@ This ensures that the `$vectorSearch` queries in `chatService.js` can run correc
 
 - Chat history TTL is controlled by `CHAT_HISTORY_TTL` (secs).
 - To warm caches, re-run `npm run seed` and invoke `/api/chat` with sample queries to populate Redis and Jina indices.
+  
+## Input Validation & Error Handling
+
+- All API endpoints validate their inputs (sessionId cookie and request body) and return `400 Bad Request` for malformed requests.
+- Service logic wraps external calls and database operations, returning:
+  - `502 Bad Gateway` for upstream (Jina/Gemini) failures,
+  - `500 Internal Server Error` for unexpected exceptions.
+
+## Resilience & Performance
+
+- **Circuit Breaker**: Gemini API calls are protected by a circuit breaker (10s timeout, opens after >50% failures, 30s reset) to avoid cascading failures.
+- **Async Persistence**: Chat messages are batched and written to Redis and MongoDB in a fire-and-forget fashion to minimize latency for user responses.
 
