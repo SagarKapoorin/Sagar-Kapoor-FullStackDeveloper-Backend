@@ -57,7 +57,7 @@ REDIS_URL=redis://127.0.0.1:6379
 # Jina Embeddings API
 JINA_API_KEY=your_jina_api_key
 # (Optional) override default embedding model on Jina Cloud
-JINA_MODEL=jina/all-MiniLM-L6-v2
+JINA_MODEL=jina-embeddings-v3
 
 # Google Gemini
 GEMINI_API_KEY=your_gemini_api_key
