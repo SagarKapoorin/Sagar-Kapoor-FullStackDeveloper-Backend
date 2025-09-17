@@ -76,12 +76,13 @@ const rawResults = await Article.collection.aggregate([
   const botMsg = { role: 'bot', text: answer, timestamp: now };
   const historyKey = `chat:${sessionId}`;
 //multi to execute multiple statement together for bot and user message
-  redisClient
-    .multi()
-    .rPush(historyKey, JSON.stringify(userMsg), JSON.stringify(botMsg))
-    .expire(historyKey, CHAT_HISTORY_TTL)
-    .exec()
-    .catch((err) => console.error('Redis persistence error', err));
+    // Persist user and bot messages atomically in Redis list
+    redisClient
+      .multi()
+      .rPush(historyKey, [JSON.stringify(userMsg), JSON.stringify(botMsg)])
+      .expire(historyKey, CHAT_HISTORY_TTL)
+      .exec()
+      .catch((err) => console.error('Redis persistence error', err));
 
   
   ChatSession.findOneAndUpdate(
