@@ -1,0 +1,61 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.chat-window {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  &__messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: $spacing-6;
+    @include custom-scrollbar;
+    
+    @include mobile {
+      padding: $spacing-4;
+    }
+  }
+
+  &__empty-state {
+    @include flex-center;
+    @include flex-column;
+    height: 100%;
+    text-align: center;
+    padding: $spacing-8;
+    
+    @include mobile {
+      padding: $spacing-6;
+    }
+  }
+
+  &__empty-icon {
+    font-size: 4rem;
+    margin-bottom: $spacing-6;
+    opacity: 0.8;
+  }
+
+  &__empty-title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+    margin: 0 0 $spacing-4;
+    
+    @include mobile {
+      font-size: $font-size-lg;
+    }
+  }
+
+  &__empty-text {
+    font-size: $font-size-base;
+    color: $text-secondary;
+    line-height: $line-height-relaxed;
+    max-width: 400px;
+    margin: 0;
+    
+    @include mobile {
+      font-size: $font-size-sm;
+    }
+  }
+}

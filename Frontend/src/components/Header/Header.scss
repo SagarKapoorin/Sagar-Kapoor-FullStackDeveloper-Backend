@@ -1,0 +1,46 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.chat-header {
+  padding: $spacing-6 $spacing-6 $spacing-4;
+  border-bottom: 1px solid $border-color;
+  background-color: $surface-color;
+  border-radius: $radius-xl $radius-xl 0 0;
+
+  &__content {
+    @include flex-between;
+    max-width: 100%;
+  }
+
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+    margin: 0;
+    
+    @include mobile {
+      font-size: $font-size-lg;
+    }
+  }
+
+  &__reset-btn {
+    @include button-secondary;
+    padding: $spacing-2 $spacing-4;
+    font-size: $font-size-sm;
+    gap: $spacing-2;
+    
+    @include mobile {
+      padding: $spacing-2 $spacing-3;
+      font-size: $font-size-xs;
+      
+      span {
+        display: none;
+      }
+    }
+    
+    &:hover {
+      color: $error-color;
+      border-color: $error-color;
+    }
+  }
+}
