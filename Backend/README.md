@@ -109,7 +109,7 @@ This ensures that the `$vectorSearch` queries in `chatService.js` can run correc
   - `500 Internal Server Error` for unexpected exceptions.
 
 ## Resilience & Performance
-
+  **Rate-Limiting**: 100 req per minute handled in redis itself 
 - **Circuit Breaker**: Gemini API calls are protected by a circuit breaker (10s timeout, opens after >50% failures, 30s reset) to avoid cascading failures.
 - **Async Persistence**: Chat messages are batched and written to Redis and MongoDB in a fire-and-forget fashion to minimize latency for user responses.
 
