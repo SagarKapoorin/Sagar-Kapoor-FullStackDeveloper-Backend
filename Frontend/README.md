@@ -1,84 +1,55 @@
-# React + TypeScript + Vite
+# Voosh News Chatbot – Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the React chat UI for the Voosh News Chatbot. It connects to the backend REST API to manage chat sessions and messages.
 
-Currently, two official plugins are available:
+## Features
+- Display user bot messages of session id
+- Type and send new queries
+- Live “typing” indicator for bot responses
+- Reset button to clear session history
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
+- **Framework**: React (18+) with functional components and Hooks
+- **Bundler**: Vite for fast development and HMR
+- **Language**: TypeScript for type safety
+- **Styles**: SCSS with BEM conventions and mixins
 
-## Expanding the ESLint configuration
+## Prerequisites
+- Node.js v16+ or higher
+- Backend service running and accessible
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Setup & Run
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-## SCSS Setup
-
-To use SCSS in this project:
-1. Install the Sass preprocessor:
+1. Copy environment file and set backend URL:
    ```bash
-   npm install --save-dev sass
-   ```
-2. Rename your CSS files in `src/` to `.scss`:
-   - `index.css` → `index.scss`
-   - `App.css` → `App.scss`
-3. Update imports in source files:
-   ```ts
-   import './index.scss'
-   import './App.scss'
+   cd Frontend
+   cp .env .env.local
+   # Edit .env.local:
+   VITE_API_BASE_URL=http://localhost:3000
    ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+3. Start development server:
+   ```bash
+   npm run dev
+   ```
+   Open your browser at `http://localhost:5173`.
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Environment Variables
+- `VITE_API_BASE_URL` – Base URL of the backend API (must include protocol and port).
+
+## Scripts
+- `npm run dev` – Run Vite dev server
+- `npm run build` – Build production bundle
+- `npm run preview` – Preview production build
+
+## Integration
+The front end communicates via these endpoints (handled by `useChatbot` hook):
+- `GET  ${VITE_API_BASE_URL}/api/chat/history` – Load chat history
+- `POST ${VITE_API_BASE_URL}/api/chat` – Send a new user query
+- `DELETE ${VITE_API_BASE_URL}/api/chat/history` – Reset chat session
+
