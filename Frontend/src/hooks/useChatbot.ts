@@ -21,7 +21,6 @@ export const useChatbot = () => {
   });
 
   const generateBotResponse = useCallback((userMessage: string): string => {
-    // Simple keyword-based responses for demo
     const lowerMessage = userMessage.toLowerCase();
     
     if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
@@ -36,7 +35,6 @@ export const useChatbot = () => {
       return "You're welcome! Is there anything else you'd like to know about current news and events?";
     }
     
-    // Return a random response
     return BOT_RESPONSES[Math.floor(Math.random() * BOT_RESPONSES.length)];
   }, []);
 
@@ -48,14 +46,12 @@ export const useChatbot = () => {
       timestamp: new Date()
     };
 
-    // Add user message
     setChatState(prev => ({
       ...prev,
       messages: [...prev.messages, userMessage],
       isTyping: true
     }));
 
-    // Simulate bot response delay
     setTimeout(() => {
       const botResponse = generateBotResponse(content);
       const botMessage: Message = {
@@ -71,7 +67,7 @@ export const useChatbot = () => {
         messages: [...prev.messages, botMessage],
         isTyping: false
       }));
-    }, 1500 + Math.random() * 1000); // Random delay between 1.5-2.5 seconds
+    }, 1500 + Math.random() * 1000); 
   }, [generateBotResponse]);
 
   const resetSession = useCallback(() => {

@@ -17,7 +17,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
       return;
     }
 
-    // Typewriter effect for streaming messages
+    //typewriter effect for messages
     let currentIndex = 0;
     const interval = setInterval(() => {
       if (currentIndex < message.content.length) {

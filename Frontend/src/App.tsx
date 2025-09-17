@@ -1,4 +1,3 @@
-import React from 'react';
 import Header from './components/Header/Header';
 import ChatWindow from './components/ChatWindow/ChatWindow';
 import InputBox from './components/InputBox/InputBox';

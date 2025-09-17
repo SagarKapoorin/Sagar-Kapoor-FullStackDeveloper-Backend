@@ -1,6 +1,5 @@
-@import 'variables';
+@use 'variables' as *;
 
-// Media queries
 @mixin mobile {
   @media (max-width: #{$breakpoint-md - 1px}) {
     @content;
@@ -19,7 +18,6 @@
   }
 }
 
-// Flexbox utilities
 @mixin flex-center {
   display: flex;
   align-items: center;
@@ -37,7 +35,6 @@
   flex-direction: column;
 }
 
-// Button styles
 @mixin button-base {
   display: inline-flex;
   align-items: center;
@@ -86,7 +83,6 @@
   }
 }
 
-// Card styles
 @mixin card {
   background-color: $surface-color;
   border-radius: $radius-xl;
@@ -94,7 +90,6 @@
   border: 1px solid $border-color;
 }
 
-// Scrollbar styles
 @mixin custom-scrollbar {
   &::-webkit-scrollbar {
     width: 6px;
@@ -114,7 +109,6 @@
   }
 }
 
-// Animation keyframes
 @keyframes fadeInUp {
   from {
     opacity: 0;
