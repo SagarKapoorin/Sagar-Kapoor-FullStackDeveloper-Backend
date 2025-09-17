@@ -1,0 +1,137 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+@use 'sass:color';
+
+.chat-header {
+  padding: $spacing-6 $spacing-6 $spacing-4;
+  border-bottom: 1px solid $border-color;
+  background-color: $surface-color;
+  border-radius: $radius-xl $radius-xl 0 0;
+
+  &__content {
+    @include flex-between;
+    max-width: 100%;
+  }
+
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+    margin: 0;
+    
+    @include mobile {
+      font-size: $font-size-lg;
+    }
+  }
+
+  &__reset-btn {
+    @include button-secondary;
+    padding: $spacing-2 $spacing-4;
+    font-size: $font-size-sm;
+    gap: $spacing-2;
+    
+    @include mobile {
+      padding: $spacing-2 $spacing-3;
+      font-size: $font-size-xs;
+      
+      span {
+        display: none;
+      }
+    }
+    
+    &:hover {
+      color: $error-color;
+      border-color: $error-color;
+    }
+  }
+}
+
+ .chat-header {
+  &__reset-dialog-content {
+    .chat-header__dialog-btn {
+      margin: 0 $spacing-2;
+      @include button-secondary;
+    }
+    .chat-header__dialog-btn.confirm {
+      background-color: $error-color;
+      color: white;
+      border-color: $error-color;
+      &:hover:not(:disabled) {
+        background-color: color.adjust($error-color, $lightness: -10%);
+        color: white;
+      }
+    }
+    .chat-header__dialog-btn.cancel {
+      @include button-secondary;
+    }
+  }
+}
+
+.chat-header {
+  position: relative;
+
+  &__reset-dialog {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+
+    &-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    &-content {
+      position: relative;
+      background-color: $surface-color;
+      padding: $spacing-6;
+      border-radius: $radius-md;
+      box-shadow: $shadow-lg;
+      text-align: center;
+      z-index: 1001;
+
+      p {
+        margin-bottom: $spacing-4;
+        color: $text-primary;
+      }
+
+      .chat-header__dialog-btn {
+        @include button-secondary;
+        padding: $spacing-2 $spacing-4;
+        font-size: $font-size-sm;
+        box-sizing: border-box;
+      }
+
+      .chat-header__dialog-btn.confirm {
+        @include button-base;
+        padding: $spacing-2 $spacing-4;
+        font-size: $font-size-sm;
+        background-color: $error-color;
+        color: white;
+        border: 1px solid $error-color;
+        &:hover:not(:disabled) {
+          background-color: color.adjust($error-color, $lightness: -10%);
+          transform: translateY(-1px);
+          box-shadow: $shadow-lg;
+        }
+      }
+
+      .chat-header__dialog-btn.cancel {
+        // Cancel (secondary) button style
+        @include button-secondary;
+        padding: $spacing-2 $spacing-4;
+        font-size: $font-size-sm;
+        &:hover:not(:disabled) {
+          background-color: $surface-color;
+          border-color: $primary-color;
+          color: $primary-color;
+          transform: translateY(-1px);
+          box-shadow: $shadow-md;
+        }
+      }
+    }
+  }
+}

@@ -13,9 +13,9 @@ const CHAT_HISTORY_TTL = parseInt(process.env.CHAT_HISTORY_TTL, 10) || 86400;
 // Set up circuit-breaker for Gemini API calls
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 const geminiOptions = {
-  timeout: 10000,                 //10s timeout
+  timeout: 50000,                 //50s timeout
   errorThresholdPercentage: 50,   //50% fail rate
-  resetTimeout: 30000,            // 30s
+  resetTimeout: 3000,            // 3s 
 };
 const geminiBreaker = new CircuitBreaker(
   async (context, queryText) => {
@@ -76,12 +76,13 @@ const rawResults = await Article.collection.aggregate([
   const botMsg = { role: 'bot', text: answer, timestamp: now };
   const historyKey = `chat:${sessionId}`;
 //multi to execute multiple statement together for bot and user message
-  redisClient
-    .multi()
-    .rPush(historyKey, JSON.stringify(userMsg), JSON.stringify(botMsg))
-    .expire(historyKey, CHAT_HISTORY_TTL)
-    .exec()
-    .catch((err) => console.error('Redis persistence error', err));
+    // Persist user and bot messages atomically in Redis list
+    redisClient
+      .multi()
+      .rPush(historyKey, [JSON.stringify(userMsg), JSON.stringify(botMsg)])
+      .expire(historyKey, CHAT_HISTORY_TTL)
+      .exec()
+      .catch((err) => console.error('Redis persistence error', err));
 
   
   ChatSession.findOneAndUpdate(

@@ -1,0 +1,54 @@
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
+
+.typing-indicator {
+  display: flex;
+  align-items: flex-end;
+  gap: $spacing-3;
+  padding: $spacing-2 0;
+  animation: fadeInUp 0.3s ease-out;
+
+  &__avatar {
+    width: 32px;
+    height: 32px;
+    @include flex-center;
+    flex-shrink: 0;
+  }
+
+  &__bot-icon {
+    font-size: $font-size-lg;
+  }
+
+  &__bubble {
+    background-color: $bot-message-bg;
+    border-radius: $radius-lg $radius-lg $radius-lg $spacing-1;
+    padding: $spacing-4;
+    box-shadow: $shadow-sm;
+    border: 1px solid $border-color;
+  }
+
+  &__dots {
+    display: flex;
+    gap: $spacing-1;
+    
+    span {
+      width: 6px;
+      height: 6px;
+      background-color: $text-muted;
+      border-radius: 50%;
+      animation: typing 1.4s ease-in-out infinite;
+      
+      &:nth-child(1) {
+        animation-delay: 0s;
+      }
+      
+      &:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      
+      &:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+    }
+  }
+}
