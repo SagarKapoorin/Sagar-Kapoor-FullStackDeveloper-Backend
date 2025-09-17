@@ -22,22 +22,25 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(express.json({ limit: "30mb" }));
 app.use(express.urlencoded({ limit: "30mb", extended: true }));
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: CORS_ORIGIN,
     credentials: true,
   })
 );
-// Chat endpoints: message, history retrieval, and clearing
+// Health-check endpoint
+app.get('/health', (_req, res) => {
+  res.json({ success: true, message: 'server is running and everything is fine' });
+});
 app.use('/api/chat', chatRouter);
 
 const PORT = process.env.PORT || "3000";
-// console.log(PORT);
 const MONGO_URL=
   process.env.MONGO_URL ||
   "mongodb://localhost:27017/mydatabase"; /*for docker based port*/
-// console.log(MONGO_URL);
-mongoose
+
+  mongoose
   .connect(MONGO_URL, {})
   .then(() => {
     app.listen(PORT, () => console.log(`Server Port: ${PORT}`));
@@ -47,7 +50,6 @@ mongoose
     connect`)
   );
 
-// Global error handler: return JSON with success:false and error message
 app.use((err, req, res, next) => {
   console.error(err);
   if (res.headersSent) {
